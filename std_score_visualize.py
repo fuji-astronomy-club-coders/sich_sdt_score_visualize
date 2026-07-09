@@ -1,6 +1,7 @@
+#ダミーデータ
 import numpy as np
 height = 1104
-width = 1680
+width = 1608
 n_frames = 10
 
 dummy_date = np.random.uniform(
@@ -9,3 +10,5 @@ dummy_date = np.random.uniform(
     size=(n_frames,height,width)
 )
 print(dummy_date)
+
+#カラーマップの作成
