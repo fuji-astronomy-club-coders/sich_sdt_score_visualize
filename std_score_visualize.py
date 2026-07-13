@@ -1,3 +1,38 @@
+import os, cv2, numpy as np, tqdm
+import cv2
+import numpy as np
+import os
+import tqdm
+
+def extract_sun_mini(folder, size):
+    #もし指定されたフォルダは存在しなければ、エラーを出さずに空の配列を返す
+    if not os.path.exists(folder):
+        print("f:注意:フォルダ '{folder}'が見つからないため、本番処理をスキップしてダミーデータへ移行します。")
+        return np.array([])
+    
+    # 画像ファイルのみ1000枚取得
+    files = [f for f in sorted(os.listdir(folder)) if f.lower().endswith(('.png', '.jpg', '.jpeg'))][:1000]
+    frames = []
+
+@@ -14,11 +22,28 @@ def extract_sun_mini(folder, size):
+        if M["m00"] == 0: continue    
+            cx, cy = int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"])
+        
+        # 切り抜き（画面端のガード付き）
+        h, w = img.shape
+        y1, y2, x1, x2 = max(0, cy-size//2), min(h, cy+size//2), max(0, cx-size//2), min(w, cx+size//2)
+        frames.append(img[y1:y2, x1:x2])
+        
+        #切り抜きたい理想の範囲（画面外にはみ出す可能性あり）
+        h,w = img.shape
+        half = size//2
+        y1,y2 =  cy - half, cy + half
+        x1,x2 = cx - half,cx + half
+
+        #画面外にはみ出している量（余白の計算）
+        top =max(0,-y1)
+        bottom =max(0,y2 - h)
+        left = max(0,-x1)
         right =max(0,x2 - w)
 
         #画面内に収まる安全な範囲だけでまずは切りぬく
@@ -14,7 +49,7 @@
 
 # --- 実行とCSV保存（1フレームずつピクセル保存） ---
 
-@@ -32,49 +57,51 @@
+@@ -32,9 +57,11 @@ if __name__ == "__main__":
     # 1フレームごと、全ピクセルをCSVに保存
     for i, frame in enumerate(frames):
         np.savetxt(f"{out_dir}/frame_{i+1:03d}.csv", frame, delimiter=",", fmt="%d")
