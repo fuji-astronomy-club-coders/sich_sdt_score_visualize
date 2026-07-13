@@ -1,3 +1,31 @@
+        right =max(0,x2 - w)
+
+        #画面内に収まる安全な範囲だけでまずは切りぬく
+        crop_y1,crop_y2 = max(0,y1),min(h,y2)
+        crop_x1,crop_x2 = max(0,x1),min(w,x2)
+        cropped = img[crop_y1:crop_y2,crop_x1:crop_x2]
+
+        #はみ出していた部分を黒色（0）で埋めて、常にsize x size　にする 
+        padded = cv2.copyMakeBorder(cropped,top,bottom,left,right,cv2.BORDER_CONSTANT,value = 0)
+
+        frames.append(padded)
+
+    return np.array(frames)
+
+# --- 実行とCSV保存（1フレームずつピクセル保存） ---
+
+@@ -32,49 +57,51 @@
+    # 1フレームごと、全ピクセルをCSVに保存
+    for i, frame in enumerate(frames):
+        np.savetxt(f"{out_dir}/frame_{i+1:03d}.csv", frame, delimiter=",", fmt="%d")
+        
+    # 1ピクセルずつの個別アクセス（例：1枚目の座標x=10, y=20の明るさ）
+    print(f"個別ピクセル明るさ: {frames[0, 20, 10]}")
+
+    #本番用の画像が1枚以上読み込めている場合のみ実行（空エラー防止用）
+    if len(frames) > 0:  
+        # 1ピクセルずつの個別アクセス（例：1枚目の座標x=10, y=20の明るさ）
+        print(f"個別ピクセル明るさ: {frames[0, 20, 10]}")
 #平均を計算
 mean=np.mean(frames,axis=0)
 print("平均画像の画素値")
