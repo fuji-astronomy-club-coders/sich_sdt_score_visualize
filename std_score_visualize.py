@@ -5,16 +5,9 @@ print(mean)
 #標準偏差を計算
 std=np.std(frames,axis=0)
 print("標準偏差画像")
-print(std)
 #偏差値を計算
-# 標準偏差が0の画素は、0で割ることを防ぐため50を代入する
-hensachi = np.where(
-    std == 0,
-    50,
-    50 + 10 * (frames - mean) / std
-)
+hensachi=50+10*(frames-mean)/std
 print("偏差値画像")
-print(hensachi)
 #偏差値画像を1枚ずつ表示する。
 for i in range(len(hensachi)):
     print(f"{i+1}枚目の偏差値画像")
@@ -47,12 +40,7 @@ std=np.std(frames,axis=0)
 print("標準偏差画像")
 print(std)
 #各ピクセルについて、全フレームの平均・標準偏差から偏差値を計算する。
-# 標準偏差が0の画素は、0で割ることを防ぐため50を代入する
-hensachi = np.where(
-    std == 0,
-    50,
-    50 + 10 * (frames - mean) / std
-)
+hensachi=50+10*(frames-mean)/std
 print("偏差値画像")
 print(hensachi)
 #偏差値画像を1枚ずつ表示する。
