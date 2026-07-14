@@ -6,12 +6,12 @@ import cv2
 height = 1104
 width = 1608
 
-# フレーム数を動作確認用として10frameに設定
+# 動作確認用としてフレーム数を10に設定
 n_frames = 10
 
-# 1~100の間のランダム差値データを格納する3次元配列を作成
+# 0~100の間のランダムな偏差値データを格納する3次元配列を作成
 dummy_data = np.random.uniform(
-    low=1,
+    low=0,
     high=100,
     size=(n_frames,height,width)
 )
@@ -62,7 +62,7 @@ colormap_lut = create_colormap()
 # 動画作成用
 # 出力動画の設定
 video_writer = cv2.VideoWriter(
-    r"C:\Users\2025005585\Desktop\python\output_test2.mp4",
+    r"C:\Users\2025005585\Desktop\python\output_test.mp4",
     cv2.VideoWriter_fourcc(*'mp4v'),
     30.0,
     (width, height)
