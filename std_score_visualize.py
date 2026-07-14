@@ -55,7 +55,6 @@ std=np.std(frames,axis=0)
 print("標準偏差画像")
 print(std)
 #偏差値を計算
-#fixed BUG:偏差値がゼロの場合に0除算が発生
 #0除算を防ぐため、偏差値を50としました。
 hensachi = np.where(
     std == 0,
@@ -68,7 +67,6 @@ for i in range(len(hensachi)):
     print(hensachi[i])
 
 #以下、ダミーデータ
-#fixed NOTE:import宣言は特別な理由がなければファイルの冒頭にまとめる
 #3枚のダミー画像を作る。
 frames=np.array([
     [[100,110],
@@ -101,4 +99,4 @@ hensachi = np.where(
 #偏差値画像を1枚ずつ表示する。
 for i in range(len(hensachi)):
     print(f"{i+1}枚目の偏差値画像")
-    print(hensachi[i])
+    print(hensachi[i]) 
