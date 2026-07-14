@@ -17,6 +17,7 @@ def extract_sun_mini(folder, size):
         if img is None: continue
         
         # 太陽の重心(cx, cy)を計算
+        # BUG:太陽位置の計算を、MIN2_v1_2.MIN2_ignore_sunspots(最小二乗法による円の検出)に変更
         M = cv2.moments(cv2.threshold(img, 50, 255, cv2.THRESH_BINARY)[1])
         if M["m00"] == 0: continue
         cx, cy = int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"])
