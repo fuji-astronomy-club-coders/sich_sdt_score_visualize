@@ -92,7 +92,7 @@ print(mean)
 std=np.std(frames,axis=0)
 print("標準偏差画像")
 print(std)
-#各ピクセルについて、全フレームの平均・標準偏差から偏差値を計算する。
+#各ピクセルについて、全フレームの平均・標準偏差から偏差値を計算する.。
 hensachi = np.where(
     std == 0,
     50,
