@@ -4,16 +4,19 @@
 import os
 import cv2
 import tqdm
+import sys
+import zipfile
+import tempfile
 import numpy as np
 #TODO:可読性が下がるので、asを使うimportは改行してください 
 
 #---パラメータ宣言（頻繁に変更する設定をここに集約）---
 INPUT_DIR = "./sun_images"   #処理対象の画像フォルダ
-CROP_H = 500           #　抽出する画像サイズ(縦幅)
-CROP_W = 600           #　抽出する画像サイズ(横幅)
+CROP_H = 800           #　抽出する画像サイズ(縦幅)
+CROP_W = 800           #　抽出する画像サイズ(横幅)
 OUT_DIR = "./output_pixels"  #  CSV保存先フォルダ
 
-def extract_sun_mini(folder:str, h_size:int,w_size:int) -> np.nbarray:
+def extract_sun_mini(folder:str, h_size:int,w_size:int) -> np.ndarray:
     #NOTE:docstringを追加
     """フォルダ内の太陽画像から太陽重心を算出し、指定サイズで切りぬいた画像配列を返します。
     画面端にかかる場合は、足りない部分を黒く塗りつぶします。
@@ -79,14 +82,23 @@ def extract_sun_mini(folder:str, h_size:int,w_size:int) -> np.nbarray:
 # --- 実行とCSV保存（1フレームずつピクセル保存） ---
 #FIXME:`if __name__ == "__main__"` がうまく使えていない。二人で相談してif文内に入れるものを決めてください。＃
 if __name__ == "__main__":
-    # TODO:処理画像のdirectoryは頻繁に変更するので、`if __name__ ...`の冒頭で宣言してparameter化するか、tkinterによるGUI選択を。
-    # TODO:抽出画像のサイズは調整する場合があるので、同様に冒頭で宣言してparameter化
-    #保存先フォルダの作成
-    os.makediirs(OUT_DIR,exist_ok=True)
-    
-    # メイン処理の実行
-    frames = extract_sun_mini(INPUT_DIR,h_size = CROP_H,w_size = CROP_W)
 
+    # コマンドライン引数からZIPのパスを取得（未指定ならデフォルト）
+    if len(sys.argv) > 1:
+        target_zip = sys.argv[1]
+    else:
+        target_zip = "samples/2025-07-20-PL1.zip"
+
+    # 保存先フォルダの作成（タイポ os.makediirs を修正）
+    os.makedirs(OUT_DIR, exist_ok=True)
+    
+    # ZIPを展開せずに一時フォルダを使って安全に読み込む
+    with tempfile.TemporaryDirectory() as temp_dir:
+        print(f"\n--- ZIPファイルの一時処理を開始: {target_zip} ---")
+        with zipfile.ZipFile(target_zip, 'r') as z:
+            z.extractall(temp_dir)
+        
+        frames = extract_sun_mini(temp_dir, h_size=CROP_H, w_size=CROP_W)
     
     # 1フレームごと、全ピクセルをCSVに保存
     if len(frames) > 0:
@@ -118,3 +130,38 @@ hensachi = np.where(
 for i in range(len(hensachi)):
     print(f"{i+1}枚目の偏差値画像")
     print(hensachi[i])
+
+#以下、ダミーデータ
+#3枚のダミー画像を作る。
+frames=np.array([
+    [[100,110],
+    [120,130]],
+    
+    [[102,111],
+    [119,131]],
+    
+    [[101,109],
+    [121,132]]
+])
+#念のため確認
+print("元データ")
+print(frames)
+#平均を求める
+mean=np.mean(frames,axis=0)
+print("平均画像の画素値")
+print(mean)
+#axis=0は、フレーム方向(時間方向)に平均を取る！
+#標準偏差を求める。
+std=np.std(frames,axis=0)
+print("標準偏差画像")
+print(std)
+#各ピクセルについて、全フレームの平均・標準偏差から偏差値を計算する.。
+hensachi = np.where(
+    std == 0,
+    50,
+    50 + 10 * (frames - mean) / std
+)
+#偏差値画像を1枚ずつ表示する。
+for i in range(len(hensachi)):
+    print(f"{i+1}枚目の偏差値画像")
+    print(hensachi[i]) 
