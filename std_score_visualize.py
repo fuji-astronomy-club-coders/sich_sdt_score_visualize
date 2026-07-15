@@ -8,6 +8,16 @@ import sys
 import zipfile
 import tempfile
 import numpy as np
+
+from samples.zip_operater import get_image_names_from_zip, load_image_from_zip_cv2
+zip_path = "samples/2025-07-20-PL1.zip"
+image_names = get_image_names_from_zip(zip_path)
+frames = []
+for name in image_names:
+    img = load_image_from_zip_cv2(zip_path, name)
+    frames.append(img)
+frames = np.array(frames)
+
 #TODO:可読性が下がるので、asを使うimportは改行してください 
 
 #---パラメータ宣言（頻繁に変更する設定をここに集約）---
