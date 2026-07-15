@@ -26,7 +26,7 @@ CROP_H = 800           #　抽出する画像サイズ(縦幅)
 CROP_W = 800           #　抽出する画像サイズ(横幅)
 OUT_DIR = "./output_pixels"  #  CSV保存先フォルダ
 
-def extract_sun_mini(folder:str, h_size:int,w_size:int) -> np.ndarray:
+def extract_sun_mini(zip_path:str, h_size:int,w_size:int) -> np.ndarray:
     #NOTE:docstringを追加
     """フォルダ内の太陽画像から太陽重心を算出し、指定サイズで切りぬいた画像配列を返します。
     画面端にかかる場合は、足りない部分を黒く塗りつぶします。
@@ -42,18 +42,15 @@ def extract_sun_mini(folder:str, h_size:int,w_size:int) -> np.ndarray:
     print(f"---画像の読み込みと切り抜き処理を開始:{folder}---")
     # 画像ファイルのみ1000枚取得
     #BUG:厳密に1000枚とは限らないので、フォルダ内の画像すべてを読み込む
-    files = [f for f in sorted(os.listdir(folder)) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
-    if not files:
-        print("指定されたフォルダに画像ファイルが見つかりませんでした。")
-        return np.empty(0,h_size,w_size)
+    image_names = get_image_names_from_zip(zip_path)
     frames = []
     half_h = h_size//2
     half_w = w_size//2
     #tqdmによる進捗表示
-    for f in tqdm.tqdm(files,desc="Processing images"):
+    for name in tqdm.tqdm(image_names, desc="Processing images"):
         #FIXME:撮影は基本16bit(下位12bit)で行うので、`cv2.IMRED_GRAYSCALE`はアカン
         #16bit(下位12bit)画像を輝度値(1ch)のまま正しく読み込む
-        img = cv2.imread(os.path.join(folder, f),cv2.IMREAD_UNCHANGED)
+        img = load_image_from_zip_cv2(zip_path, name)
         if img is None: 
             continue
         #二値化処理
@@ -140,38 +137,3 @@ hensachi = np.where(
 for i in range(len(hensachi)):
     print(f"{i+1}枚目の偏差値画像")
     print(hensachi[i])
-
-#以下、ダミーデータ
-#3枚のダミー画像を作る。
-frames=np.array([
-    [[100,110],
-    [120,130]],
-    
-    [[102,111],
-    [119,131]],
-    
-    [[101,109],
-    [121,132]]
-])
-#念のため確認
-print("元データ")
-print(frames)
-#平均を求める
-mean=np.mean(frames,axis=0)
-print("平均画像の画素値")
-print(mean)
-#axis=0は、フレーム方向(時間方向)に平均を取る！
-#標準偏差を求める。
-std=np.std(frames,axis=0)
-print("標準偏差画像")
-print(std)
-#各ピクセルについて、全フレームの平均・標準偏差から偏差値を計算する.。
-hensachi = np.where(
-    std == 0,
-    50,
-    50 + 10 * (frames - mean) / std
-)
-#偏差値画像を1枚ずつ表示する。
-for i in range(len(hensachi)):
-    print(f"{i+1}枚目の偏差値画像")
-    print(hensachi[i]) 
