@@ -9,20 +9,22 @@ import numpy as np
 
 #---パラメータ宣言（頻繁に変更する設定をここに集約）---
 INPUT_DIR = "./sun_images"   #処理対象の画像フォルダ
-CROP_SIZE = 200              #　抽出する画像サイズ
+CROP_H = 500           #　抽出する画像サイズ(縦幅)
+CROP_W = 600           #　抽出する画像サイズ(横幅)
 OUT_DIR = "./output_pixels"  #  CSV保存先フォルダ
 
-def extract_sun_mini(folder:str, size:int) -> np.nbarray:
+def extract_sun_mini(folder:str, h_size:int,w_size:int) -> np.nbarray:
     #NOTE:docstringを追加
     """フォルダ内の太陽画像から太陽重心を算出し、指定サイズで切りぬいた画像配列を返します。
     画面端にかかる場合は、足りない部分を黒く塗りつぶします。
 
     Args:
         folder(str):対象の画像が保存されているフォルダのパス
-        size(int):切りぬく正方形の一辺のピクセルサイズ
+        h_size(int):切りぬく長方形の縦幅
+        w_size(int):切りぬく長方形の横幅
 
     Returns:
-        np.ndarray:切りぬかれた画像の3次元配列（N,size,size)
+        np.ndarray:切りぬかれた画像の3次元配列（N,h_size,w_size)
     """
     print(f"---画像の読み込みと切り抜き処理を開始:{folder}---")
     # 画像ファイルのみ1000枚取得
@@ -30,19 +32,20 @@ def extract_sun_mini(folder:str, size:int) -> np.nbarray:
     files = [f for f in sorted(os.listdir(folder)) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
     if not files:
         print("指定されたフォルダに画像ファイルが見つかりませんでした。")
-        return np.empty(0,size,size)
+        return np.empty(0,h_size,w_size)
     frames = []
-    half=size // 2
-    
+    half_h = h_size//2
+    half_w = w_size//2
     #tqdmによる進捗表示
     for f in tqdm.tqdm(files,desc="Processing images"):
         #FIXME:撮影は基本16bit(下位12bit)で行うので、`cv2.IMRED_GRAYSCALE`はアカン
         #16bit(下位12bit)画像を輝度値(1ch)のまま正しく読み込む
-        img = cv2.imread(os.path.join(folder, f),cv2.IMREAD_ANYDEPTH | cv2.IMAREAD_ANYCOLOR)
+        img = cv2.imread(os.path.join(folder, f),cv2.IMREAD_UNCHANGED)
         if img is None: 
             continue
         #二値化処理
         _, thresh = cv2.threshold(img,50,255,cv2.THRESH_BINARY)
+        thresh = thresh.astype(np.uint8)
 
         # 太陽の重心(cx, cy)を計算
         M = cv2.moments (thresh)
@@ -52,8 +55,8 @@ def extract_sun_mini(folder:str, size:int) -> np.nbarray:
         
         #切り抜きたい理想の範囲（画面外にはみ出す可能性あり）
         h,w = img.shape
-        y1,y2 =  cy - half, cy + half
-        x1,x2 = cx - half,cx + half
+        y1,y2 =  cy - half_h, cy + half_h
+        x1,x2 = cx - half_w,cx + half_w
 
         #画面外にはみ出している量（余白の計算）
         top =max(0,-y1)
@@ -82,7 +85,7 @@ if __name__ == "__main__":
     os.makediirs(OUT_DIR,exist_ok=True)
     
     # メイン処理の実行
-    frames = extract_sun_mini(INPUT_DIR,CROP_SIZE)
+    frames = extract_sun_mini(INPUT_DIR,h_size = CROP_H,w_size = CROP_W)
 
     
     # 1フレームごと、全ピクセルをCSVに保存
