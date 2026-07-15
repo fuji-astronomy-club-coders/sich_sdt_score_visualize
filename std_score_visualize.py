@@ -13,6 +13,16 @@ CROP_H = 500           #　抽出する画像サイズ(縦幅)
 CROP_W = 600           #　抽出する画像サイズ(横幅)
 OUT_DIR = "./output_pixels"  #  CSV保存先フォルダ
 
+from samples.zip_operater import get_image_names_from_zip, load_image_from_zip_cv2
+zip_path = "samples/2025-07-20-PL1.zip"
+image_names = get_image_names_from_zip(zip_path)
+frames = []
+for name in image_names:
+    img = load_image_from_zip_cv2(zip_path, name)
+    frames.append(img)
+
+frames = np.array(frames)
+
 def extract_sun_mini(folder:str, h_size:int,w_size:int) -> np.nbarray:
     #NOTE:docstringを追加
     """フォルダ内の太陽画像から太陽重心を算出し、指定サイズで切りぬいた画像配列を返します。
@@ -118,3 +128,4 @@ hensachi = np.where(
 for i in range(len(hensachi)):
     print(f"{i+1}枚目の偏差値画像")
     print(hensachi[i])
+    
