@@ -1,51 +1,101 @@
 #TODO:実行時に処理がどこまで進んだかわかりずらいので、loggingかprintによる進捗表示を。特にfor文等、長くなりそうな処理はtqdm moduleによる進捗表示を。
 #TODO:画像の標準出力はコンソールが汚れるので避けるべし。
 
-import os, cv2, numpy as np, tqdm
+import os
+import cv2
+import tqdm
+import numpy as np
 #TODO:可読性が下がるので、asを使うimportは改行してください 
 
-def extract_sun_mini(folder, size):
+#---パラメータ宣言（頻繁に変更する設定をここに集約）---
+INPUT_DIR = "./sun_images"   #処理対象の画像フォルダ
+CROP_SIZE = 200              #　抽出する画像サイズ
+OUT_DIR = "./output_pixels"  #  CSV保存先フォルダ
+
+def extract_sun_mini(folder:str, size:int) -> np.nbarray:
     #NOTE:docstringを追加
+    """フォルダ内の太陽画像から太陽重心を算出し、指定サイズで切りぬいた画像配列を返します。
+    画面端にかかる場合は、足りない部分を黒く塗りつぶします。
+
+    Args:
+        folder(str):対象の画像が保存されているフォルダのパス
+        size(int):切りぬく正方形の一辺のピクセルサイズ
+
+    Returns:
+        np.ndarray:切りぬかれた画像の3次元配列（N,size,size)
+    """
+    print(f"---画像の読み込みと切り抜き処理を開始:{folder}---")
     # 画像ファイルのみ1000枚取得
     #BUG:厳密に1000枚とは限らないので、フォルダ内の画像すべてを読み込む
-    files = [f for f in sorted(os.listdir(folder)) if f.lower().endswith(('.png', '.jpg', '.jpeg'))][:1000]
+    files = [f for f in sorted(os.listdir(folder)) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+    if not files:
+        print("指定されたフォルダに画像ファイルが見つかりませんでした。")
+        return np.empty(0,size,size)
     frames = []
+    half=size // 2
     
-    for f in tqdm.tqdm(files):
+    #tqdmによる進捗表示
+    for f in tqdm.tqdm(files,desc="Processing images"):
         #FIXME:撮影は基本16bit(下位12bit)で行うので、`cv2.IMRED_GRAYSCALE`はアカン
-        img = cv2.imread(os.path.join(folder, f), cv2.IMREAD_GRAYSCALE)
-        if img is None: continue
-        
+        #16bit(下位12bit)画像を輝度値(1ch)のまま正しく読み込む
+        img = cv2.imread(os.path.join(folder, f),cv2.IMREAD_ANYDEPTH | cv2.IMAREAD_ANYCOLOR)
+        if img is None: 
+            continue
+        #二値化処理
+        _, thresh = cv2.threshold(img,50,255,cv2.THRESH_BINARY)
+
         # 太陽の重心(cx, cy)を計算
-        M = cv2.moments(cv2.threshold(img, 50, 255, cv2.THRESH_BINARY)[1])
-        if M["m00"] == 0: continue
+        M = cv2.moments (thresh)
+        if M["m00"] == 0: 
+            continue
         cx, cy = int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"])
         
-        # 切り抜き（画面端のガード付き）
-        h, w = img.shape
-        #FIXME:大変エレガントな画面端ガードですが、切り抜きサイズが統一されない危険性あり。
-        y1, y2, x1, x2 = max(0, cy-size//2), min(h, cy+size//2), max(0, cx-size//2), min(w, cx+size//2)
-        frames.append(img[y1:y2, x1:x2])
+        #切り抜きたい理想の範囲（画面外にはみ出す可能性あり）
+        h,w = img.shape
+        y1,y2 =  cy - half, cy + half
+        x1,x2 = cx - half,cx + half
+
+        #画面外にはみ出している量（余白の計算）
+        top =max(0,-y1)
+        bottom =max(0,y2 - h)
+        left = max(0,-x1)
+        right =max(0,x2 - w)
+
+        #画面内に収まる安全な範囲だけでまずは切りぬく
+        crop_y1,crop_y2 = max(0,y1),min(h,y2)
+        crop_x1,crop_x2 = max(0,x1),min(w,x2)
+        cropped = img[crop_y1:crop_y2,crop_x1:crop_x2]
+
+        #はみ出していた部分を黒色（0）で埋めて、常にsize x size にする 
+        padded = cv2.copyMakeBorder(cropped,top,bottom,left,right,cv2.BORDER_CONSTANT,value = 0)
+
+        frames.append(padded)
         
     return np.array(frames)
 
 # --- 実行とCSV保存（1フレームずつピクセル保存） ---
 #FIXME:`if __name__ == "__main__"` がうまく使えていない。二人で相談してif文内に入れるものを決めてください。＃
 if __name__ == "__main__":
-    out_dir = "./output_pixels"
-    os.makedirs(out_dir, exist_ok=True)
-    
-    # 実行（フォルダ名とサイズを指定）
     # TODO:処理画像のdirectoryは頻繁に変更するので、`if __name__ ...`の冒頭で宣言してparameter化するか、tkinterによるGUI選択を。
     # TODO:抽出画像のサイズは調整する場合があるので、同様に冒頭で宣言してparameter化
-    frames = extract_sun_mini("./sun_images", 200)
+    #保存先フォルダの作成
+    os.makediirs(OUT_DIR,exist_ok=True)
+    
+    # メイン処理の実行
+    frames = extract_sun_mini(INPUT_DIR,CROP_SIZE)
+
     
     # 1フレームごと、全ピクセルをCSVに保存
-    for i, frame in enumerate(frames):
-        np.savetxt(f"{out_dir}/frame_{i+1:03d}.csv", frame, delimiter=",", fmt="%d")
+    if len(frames) > 0:
+        print(f"¥n--- CSV保存処理を開始:{OUT_DIR}---")
+        for i, frame in enumerate(tqdm.tqdm(frames,desc="Saving CSVs")):
+            np.savetxt(f"{OUT_DIR}/frame_{i+1:03d}.csv", frame, delimiter=",", fmt="%d")
         
-    # 1ピクセルずつの個別アクセス（例：1枚目の座標x=10, y=20の明るさ）
-    print(f"個別ピクセル明るさ: {frames[0, 20, 10]}")
+        # 1ピクセルずつの個別アクセス（例：1枚目の座標x=10, y=20の明るさ）
+        print("¥n--- サンプルピクセルの確認 ---")
+        print(f"個別ピクセル明るさ: {frames[0, 20, 10]}")
+    else:
+        print("有効なフレームが抽出されなかったため、保存処理をスキップしました。")
 #平均を計算
 mean=np.mean(frames,axis=0)
 print("平均画像の画素値")
