@@ -7,7 +7,7 @@ import tqdm
 import sys
 import numpy as np
 
-from samples.zip_operater import get_image_names_from_zip, load_image_from_zip_cv2
+from samples.zip_operator import get_image_names_from_zip, load_image_from_zip_cv2
 zip_path = "samples/2025-07-20-PL1.zip"
 image_names = get_image_names_from_zip(zip_path)
 frames = []
@@ -84,6 +84,29 @@ def extract_sun_mini(zip_path:str, h_size:int,w_size:int) -> np.ndarray:
         
     return np.array(frames)
 
+#平均を計算
+mean=np.mean(frames,axis=0)
+print("平均画像の画素値")
+print(mean)
+#標準偏差を計算
+std=np.std(frames,axis=0)
+print("標準偏差画像")
+print(std)
+#偏差値を計算
+#0除算を防ぐため、偏差値を50としました。
+hensachi = np.where(
+    std == 0,
+    50,
+    50 + 10 * (frames - mean) / std
+)
+
+"""
+#偏差値画像を1枚ずつ表示する。
+for i in range(len(hensachi)):
+    print(f"{i+1}枚目の偏差値画像")
+    print(hensachi[i])
+"""
+
 # --- 実行とCSV保存（1フレームずつピクセル保存） ---
 #FIXME:`if __name__ == "__main__"` がうまく使えていない。二人で相談してif文内に入れるものを決めてください。＃
 if __name__ == "__main__":
@@ -133,25 +156,3 @@ if __name__ == "__main__":
         print(f"個別ピクセル明るさ: {frames[0, 20, 10]}")
     else:
         print("有効なフレームが抽出されなかったため、保存処理をスキップしました。")
-#平均を計算
-mean=np.mean(frames,axis=0)
-print("平均画像の画素値")
-print(mean)
-#標準偏差を計算
-std=np.std(frames,axis=0)
-print("標準偏差画像")
-print(std)
-#偏差値を計算
-#0除算を防ぐため、偏差値を50としました。
-hensachi = np.where(
-    std == 0,
-    50,
-    50 + 10 * (frames - mean) / std
-)
-
-"""
-#偏差値画像を1枚ずつ表示する。
-for i in range(len(hensachi)):
-    print(f"{i+1}枚目の偏差値画像")
-    print(hensachi[i])
-"""
