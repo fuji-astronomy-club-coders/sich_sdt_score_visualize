@@ -5,6 +5,8 @@ import os
 import cv2
 import tqdm
 import sys
+import zipfile
+import tempfile
 import numpy as np
 
 from samples.zip_operater import get_image_names_from_zip, load_image_from_zip_cv2
@@ -24,7 +26,7 @@ CROP_H = 800           #　抽出する画像サイズ(縦幅)
 CROP_W = 800           #　抽出する画像サイズ(横幅)
 OUT_DIR = "./output_pixels"  #  CSV保存先フォルダ
 
-def extract_sun_mini(zip_path:str, h_size:int,w_size:int) -> np.ndarray:
+def extract_sun_mini(folder:str, h_size:int,w_size:int) -> np.ndarray:
     #NOTE:docstringを追加
     """フォルダ内の太陽画像から太陽重心を算出し、指定サイズで切りぬいた画像配列を返します。
     画面端にかかる場合は、足りない部分を黒く塗りつぶします。
@@ -37,18 +39,21 @@ def extract_sun_mini(zip_path:str, h_size:int,w_size:int) -> np.ndarray:
     Returns:
         np.ndarray:切りぬかれた画像の3次元配列（N,h_size,w_size)
     """
-    print(f"---画像の読み込みと切り抜き処理を開始:{zip_path}---")
+    print(f"---画像の読み込みと切り抜き処理を開始:{folder}---")
     # 画像ファイルのみ1000枚取得
     #BUG:厳密に1000枚とは限らないので、フォルダ内の画像すべてを読み込む
-    image_names = get_image_names_from_zip(zip_path)
+    files = [f for f in sorted(os.listdir(folder)) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+    if not files:
+        print("指定されたフォルダに画像ファイルが見つかりませんでした。")
+        return np.empty(0,h_size,w_size)
     frames = []
     half_h = h_size//2
     half_w = w_size//2
     #tqdmによる進捗表示
-    for name in tqdm.tqdm(image_names, desc="Processing images"):
+    for f in tqdm.tqdm(files,desc="Processing images"):
         #FIXME:撮影は基本16bit(下位12bit)で行うので、`cv2.IMRED_GRAYSCALE`はアカン
         #16bit(下位12bit)画像を輝度値(1ch)のまま正しく読み込む
-        img = load_image_from_zip_cv2(zip_path, name)
+        img = cv2.imread(os.path.join(folder, f),cv2.IMREAD_UNCHANGED)
         if img is None: 
             continue
         #二値化処理
@@ -98,38 +103,21 @@ if __name__ == "__main__":
     os.makedirs(OUT_DIR, exist_ok=True)
     
     # ZIPを展開せずに一時フォルダを使って安全に読み込む
-    print(f"\n--- ZIPファイルの読み込み開始: {target_zip} ---")
-
-    frames = extract_sun_mini(
-        target_zip,
-        h_size=CROP_H,
-        w_size=CROP_W
-    )
+    with tempfile.TemporaryDirectory() as temp_dir:
+        print(f"\n--- ZIPファイルの一時処理を開始: {target_zip} ---")
+        with zipfile.ZipFile(target_zip, 'r') as z:
+            z.extractall(temp_dir)
+        
+        frames = extract_sun_mini(temp_dir, h_size=CROP_H, w_size=CROP_W)
     
     # 1フレームごと、全ピクセルをCSVに保存
     if len(frames) > 0:
         print(f"¥n--- CSV保存処理を開始:{OUT_DIR}---")
         for i, frame in enumerate(tqdm.tqdm(frames,desc="Saving CSVs")):
             np.savetxt(f"{OUT_DIR}/frame_{i+1:03d}.csv", frame, delimiter=",", fmt="%d")
-
-            # 偏差値画像をCSVとして保存
-    print("\n--- 偏差値CSV保存処理を開始 ---")
-
-    HENSACHI_DIR = "./output_hensachi"
-    os.makedirs(HENSACHI_DIR, exist_ok=True)
-
-    for i, frame in enumerate(tqdm.tqdm(hensachi, desc="Saving Hensachi CSVs")):
-        np.savetxt(
-            f"{HENSACHI_DIR}/hensachi_{i+1:03d}.csv",
-            frame,
-            delimiter=",",
-            fmt="%.2f"
-        )
-
-        print("偏差値CSVの保存が完了しました。")
         
         # 1ピクセルずつの個別アクセス（例：1枚目の座標x=10, y=20の明るさ）
-        print("\n--- サンプルピクセルの確認 ---")
+        print("¥n--- サンプルピクセルの確認 ---")
         print(f"個別ピクセル明るさ: {frames[0, 20, 10]}")
     else:
         print("有効なフレームが抽出されなかったため、保存処理をスキップしました。")
@@ -148,10 +136,7 @@ hensachi = np.where(
     50,
     50 + 10 * (frames - mean) / std
 )
-
-"""
 #偏差値画像を1枚ずつ表示する。
 for i in range(len(hensachi)):
     print(f"{i+1}枚目の偏差値画像")
     print(hensachi[i])
-"""
