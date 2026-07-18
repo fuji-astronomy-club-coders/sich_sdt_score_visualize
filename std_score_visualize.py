@@ -133,9 +133,9 @@ if __name__ == "__main__":
     mean, std, hensachi = calculate_hensachi(frames)
     
     # 1フレームごと、全ピクセルをCSVに保存
-    if len(frames) > 0:
-        print(f"¥n--- CSV保存処理を開始:{OUT_DIR}---")
-        for i, frame in enumerate(tqdm.tqdm(frames,desc="Saving CSVs")):
+if len(frames) > 0:
+    print(f"¥n--- CSV保存処理を開始:{OUT_DIR}---")
+    for i, frame in enumerate(tqdm.tqdm(frames,desc="Saving CSVs")):
             np.savetxt(f"{OUT_DIR}/frame_{i+1:03d}.csv", frame, delimiter=",", fmt="%d")
 
             # 偏差値画像をCSVとして保存
@@ -157,5 +157,5 @@ if __name__ == "__main__":
         # 1ピクセルずつの個別アクセス（例：1枚目の座標x=10, y=20の明るさ）
         print("\n--- サンプルピクセルの確認 ---")
         print(f"個別ピクセル明るさ: {frames[0, 20, 10]}")
-    else:
+else:
         print("有効なフレームが抽出されなかったため、保存処理をスキップしました。")
