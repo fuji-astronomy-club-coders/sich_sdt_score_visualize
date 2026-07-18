@@ -1,27 +1,59 @@
 import numpy as np
 import cv2
+import glob
 
-# ダミーデータ作成用
-# 画像サイズを実際の動画と同じように設定
-height = 1104
-width = 1608
+#パラメータ宣言
+USE_CSV = True      # True: CSVを読み込む / False: 偏差値算出チームの変数を使用
+DEBUG = True        # True: デバッグ情報を表示
+OUTPUT_DIR = (
+    r"C:\Users\2025005585\Desktop\python"
+)                                     # 出力動画の保存先フォルダ
+OUTPUT_NAME = "output_test_sample1"   # 出力動画のファイル名（拡張子なし）
+OUTPUT_EXT = ".mp4"                   # 出力動画の拡張子
+VIDEO_CODEC = "mp4v"                # 動画コーデック
+FPS = 60.0                            # 出力動画のフレームレート
 
-# 動作確認用としてフレーム数を10に設定
-n_frames = 10
+if USE_CSV:
+    # CSVが保存されているフォルダ
+    csv_folder = r"C:\Users\2025005585\Documents\tenmon\sich_sdt_score_visualize#sich_sdt_score_visualize\output_hensachi"
+    
+    # すべてのCSVファイルを取得
+    csv_files = sorted(glob.glob(csv_folder + r"\hensachi_*.csv"))
 
-# 0~100の間のランダムな偏差値データを格納する3次元配列を作成
-dummy_data = np.random.uniform(
-    low=0,
-    high=100,
-    size=(n_frames,height,width)
-)
-# print(dummy_data)
+    # 全CSVファイルを読み込み、各フレームをリストに格納
+    frames = []
+
+    for file in csv_files:
+        frame = np.loadtxt(file, delimiter=",")
+        frames.append(frame)
+
+    # フレームのリストを3次元NumPy配列 (フレーム数 × 高さ × 幅) に変換
+    data = np.array(frames)
+
+else:
+    # 偏差値算出チームの変数をデータとして使う
+    data = hensachi
+
+# データ形状からフレーム数・画像サイズの取得
+n_frames, height, width = data.shape
+
+# 入力データの確認(デバッグ表示)
+if DEBUG:
+    print("====入力データ情報====")
+    print("データサイズ:",data.shape)
+    print("最小値:", data.min())
+    print("最大値:", data.max())
+
+    if USE_CSV:
+        print("CSV枚数:", len(csv_files))
+    
+    print("=====================")
+
 
 # カラーマップ作成用
 def create_colormap():
     # 256要素を持つLUTを作成(偏差値0~100に対応する色を設定)
     lut = np.zeros((256,1,3),dtype=np.uint8)
-
     # 偏差値50未満は濃い青から白へ段階的に変化
     lut[0:5] = [100,0,0]
     lut[5:10] = [115,25,25]
@@ -48,6 +80,7 @@ def create_colormap():
 
 colormap_lut = create_colormap()
 
+
 # LUTの色を確認するためのカラーバー作成用(必要に応じて使用)
 #line = np.linspace(0, 100, width, dtype=np.uint8)
 # 高さ50ピクセルに設定
@@ -59,24 +92,31 @@ colormap_lut = create_colormap()
 # 保存
 #cv2.imwrite(r"C:\Users\2025005585\Desktop\python\colorbar.png", colorbar_result)
 
+
 # 動画作成用
 # 出力動画の設定
 video_writer = cv2.VideoWriter(
-    r"C:\Users\2025005585\Desktop\python\output_test.mp4",
-    cv2.VideoWriter_fourcc(*'mp4v'),
-    30.0,
+    OUTPUT_DIR + "\\" + OUTPUT_NAME + OUTPUT_EXT,
+    cv2.VideoWriter_fourcc(*VIDEO_CODEC),
+    FPS,
     (width, height)
 )
 
 # 1フレームずつ取り出し、LUTを適用して動画に書き込む
 for i in range(n_frames):
-    frame = dummy_data[i]
+    frame = data[i]
     # 偏差値を0〜100に収めてuint8 型に変換
     clipped_frame = np.clip(frame, 0, 100).astype(np.uint8)
     # LUTを適用するため、グレースケール画像を3チャンネル(BGR)画像へ変換
-    three_channel_frame = cv2.cvtColor(clipped_frame,cv2.COLOR_GRAY2BGR)
+    three_channel_frame = cv2.cvtColor(
+        clipped_frame,
+        cv2.COLOR_GRAY2BGR
+    )
     # LUTを適用し、偏差値を対応する色へ変換
-    color_mapped_frame = cv2.LUT(three_channel_frame, colormap_lut)
+    color_mapped_frame = cv2.LUT(
+        three_channel_frame,
+        colormap_lut
+    )
     # 動画ファイルに1フレーム書き込む
     video_writer.write(color_mapped_frame)
 
