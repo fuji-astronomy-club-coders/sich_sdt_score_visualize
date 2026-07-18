@@ -6,6 +6,7 @@ import cv2
 import tqdm
 import sys
 import numpy as np
+from MIN2ver2 import MIN2_ignore_sunspots
 
 from samples.zip_operator import get_image_names_from_zip, load_image_from_zip_cv2
 zip_path = "samples/2025-07-20-PL1.zip"
@@ -51,15 +52,17 @@ def extract_sun_mini(zip_path:str, h_size:int,w_size:int) -> np.ndarray:
         img = load_image_from_zip_cv2(zip_path, name)
         if img is None: 
             continue
-        #二値化処理
-        _, thresh = cv2.threshold(img,50,255,cv2.THRESH_BINARY)
-        thresh = thresh.astype(np.uint8)
-
-        # 太陽の重心(cx, cy)を計算
-        M = cv2.moments (thresh)
-        if M["m00"] == 0: 
+        try:
+            cx, cy, r = MIN2_ignore_sunspots(
+                img,
+                show=False,
+                debug=False
+            )
+        except Exception:
             continue
-        cx, cy = int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"])
+
+        cx = int(cx)
+        cy = int(cy)
         
         #切り抜きたい理想の範囲（画面外にはみ出す可能性あり）
         h,w = img.shape
