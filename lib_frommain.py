@@ -33,16 +33,6 @@ MEAN_IMAGE_NAME = "mean_image"  # 平均値の出力画像のファイル名
 STD_IMAGE_NAME = "std_image"  # 標準偏差の出力画像のファイル名
 IMAGE_EXT = ".png"  # 平均と標準偏差の出力画像の拡張子
 
-
-if os.environ.get("RUN_BY_SUBPROCESS") == "true":
-    print("このスクリプトは subprocess から実行されています。")
-    # 標準入力から流れてきた文字列を一括で読み込む
-    input_data = sys.stdin.read()
-
-    # JSON文字列をPythonの辞書オブジェクトに復元
-    locals().update(json.loads(input_data))
-
-
 # 関数
 def create_colormap():
     # 256要素を持つLUTを作成(偏差値0~100に対応する色を設定)

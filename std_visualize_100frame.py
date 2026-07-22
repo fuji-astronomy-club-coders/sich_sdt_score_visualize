@@ -1,6 +1,9 @@
 import numpy as np
 import cv2
 import glob
+import os
+import sys
+import json
 
 #パラメータ宣言
 USE_CSV = True      # True: CSVを読み込む / False: 偏差値算出チームの変数を使用
@@ -12,6 +15,14 @@ OUTPUT_NAME = "output_test_sample1"   # 出力動画のファイル名（拡張�
 OUTPUT_EXT = ".mp4"                   # 出力動画の拡張子
 VIDEO_CODEC = "mp4v"                # 動画コーデック
 FPS = 60.0                            # 出力動画のフレームレート
+
+if os.environ.get("RUN_BY_SUBPROCESS") == "true":
+    print("このスクリプトは subprocess から実行されています。")
+    # 標準入力から流れてきた文字列を一括で読み込む
+    input_data = sys.stdin.read()
+
+    # JSON文字列をPythonの辞書オブジェクトに復元
+    locals().update(json.loads(input_data))
 
 if USE_CSV:
     # CSVが保存されているフォルダ
