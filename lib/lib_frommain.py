@@ -1,37 +1,10 @@
-import os
 import cv2
 import tqdm
-import sys
 import numpy as np
-import glob
-import json
 from pathlib import Path
 
-from CSV_frames import save_images_to_csv
-from MIN2ver2 import MIN2_ignore_sunspots
-from samples.zip_operator import get_image_names_from_dir, load_image_from_path_cv2
-
-# 全体
-OUTPUT_MODE = "VIDEO"  # CSV(0),VIDEO(2),WITH(1)
-# パラメータ std score
-INPUT_DIR = "./sun_images"  # 　処理対象の画像フォルダ
-CROP_H = 800  # 　抽出する画像サイズ(縦幅)
-CROP_W = 800  # 　抽出する画像サイズ(横幅)
-OUT_DIR_CSV = "./output_pixels"  #  CSV保存先フォルダ
-
-# パラメータ colormap
-DEBUG = True  # True: デバッグ情報を表示
-OUTPUT_DIR = r"C:\Users\2025005585\Desktop\python"  # 出力動画の保存先フォルダ
-OUTPUT_NAME = "output_test_sample"  # 出力動画のファイル名（拡張子なし）
-OUTPUT_EXT = ".mp4"  # 出力動画の拡張子
-VIDEO_CODEC = "mp4v"  # 出力動画コーデック
-FPS = 60.0  # 出力動画のフレームレート
-MEAN_STD_OUTPUT_DIR = (
-    r"C:\Users\2025005585\Desktop\python"  # 平均値と標準偏差の出力画像の保存先フォルダ
-)
-MEAN_IMAGE_NAME = "mean_image"  # 平均値の出力画像のファイル名
-STD_IMAGE_NAME = "std_image"  # 標準偏差の出力画像のファイル名
-IMAGE_EXT = ".png"  # 平均と標準偏差の出力画像の拡張子
+from lib.MIN2ver2 import MIN2_ignore_sunspots
+from lib.zip_operator import get_image_names_from_dir, load_image_from_path_cv2
 
 # 関数
 def create_colormap():
@@ -83,7 +56,7 @@ def normalize_image(image):
     return normalized.astype(np.uint8)
 
 
-def save_statistics_image(image, filename):
+def statistics_image(image,save_path=""):
     """
     meanやstdを正規化してカラーマップ画像として保存
     """
@@ -96,9 +69,11 @@ def save_statistics_image(image, filename):
 
     # カラーマップ適用
     color_mapped_image = cv2.LUT(three_channel_image, create_colormap())
-
-    # 保存
-    cv2.imwrite(filename, color_mapped_image)
+    if save_path:
+        # 保存
+        cv2.imwrite(save_path, color_mapped_image)
+    
+    return color_mapped_image
 
 
 def crop_and_pad(
