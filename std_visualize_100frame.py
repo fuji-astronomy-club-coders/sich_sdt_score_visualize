@@ -5,6 +5,8 @@ import os
 import sys
 import json
 
+from lib.ffmpeg_video import compress_analysis_frames
+
 #パラメータ宣言
 USE_CSV = True      # True: CSVを読み込む / False: 偏差値算出チームの変数を使用
 DEBUG = True        # True: デバッグ情報を表示
@@ -14,7 +16,8 @@ OUTPUT_DIR = (
 OUTPUT_NAME = "output_test_sample1"   # 出力動画のファイル名（拡張子なし）
 OUTPUT_EXT = ".mp4"                   # 出力動画の拡張子
 VIDEO_CODEC = "mp4v"                # 動画コーデック
-FPS = 60.0                            # 出力動画のフレームレート
+FPS = 60                            # 出力動画のフレームレートint
+
 
 if os.environ.get("RUN_BY_SUBPROCESS") == "true":
     print("このスクリプトは subprocess から実行されています。")
@@ -46,7 +49,7 @@ else:
     data = hensachi
 
 # データ形状からフレーム数・画像サイズの取得
-n_frames, height, width = data.shape
+n_frames, height, width,_ = data.shape
 
 # 入力データの確認(デバッグ表示)
 if DEBUG:
@@ -106,16 +109,12 @@ colormap_lut = create_colormap()
 
 # 動画作成用
 # 出力動画の設定
-video_writer = cv2.VideoWriter(
-    OUTPUT_DIR + "\\" + OUTPUT_NAME + OUTPUT_EXT,
-    cv2.VideoWriter_fourcc(*VIDEO_CODEC),
-    FPS,
-    (width, height)
-)
 
+data=list(data)
+finally_frames=[]
 # 1フレームずつ取り出し、LUTを適用して動画に書き込む
 for i in range(n_frames):
-    frame = data[i]
+    frame = data.pop(i)
     # 偏差値を0〜100に収めてuint8 型に変換
     clipped_frame = np.clip(frame, 0, 100).astype(np.uint8)
     # LUTを適用するため、グレースケール画像を3チャンネル(BGR)画像へ変換
@@ -128,8 +127,6 @@ for i in range(n_frames):
         three_channel_frame,
         colormap_lut
     )
-    # 動画ファイルに1フレーム書き込む
-    video_writer.write(color_mapped_frame)
-
-video_writer.release()
-print("動画の作成が完了しました")
+    finally_frames.append(color_mapped_frame)
+finally_frames=np.ndarray(finally_frames)
+compress_analysis_frames(frames=finally_frames,output_path=OUTPUT_DIR + "\\" + OUTPUT_NAME + OUTPUT_EXT,fps=FPS,lossless=True)
