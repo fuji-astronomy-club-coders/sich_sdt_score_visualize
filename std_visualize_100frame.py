@@ -14,6 +14,8 @@ OUTPUT_NAME = ""          # 出力動画のファイル名(拡張子なし)
 OUTPUT_EXT = ""           # 出力動画の拡張子
 FPS = 1                   # 出力動画のフレームレート
 
+STD_100f_OUTPUT_DIR = ""
+
 
 frames, _ = extract_sun_mini(INPUT_DIR, h_size=CROP_H, w_size=CROP_W)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -90,12 +92,11 @@ for frame in std_images:
     color_frames.append(rgb_frame)
 
 color_frames = np.array(color_frames)
-compress_analysis_frames(
+save_analysis_frames(
     frames=color_frames,
     output_path=os.path.join(
         OUTPUT_DIR, 
-        OUTPUT_NAME + OUTPUT_EXT
+        OUTPUT_NAME
     ),
-    fps=FPS,
-    lossless=True)
-print("動画の作成が完了しました")
+    ext = OUTPUT_EXT,)
+print("画像の保存が完了しました")
