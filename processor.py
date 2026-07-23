@@ -7,7 +7,7 @@ from pathlib import Path
 
 version=1.0
 
-PARENT_OUTDIR = r"O:\std_score_visualize"
+PARENT_OUTDIR = r"O:\Analyzed-Result\std_score_visualize"
 
 # 1. ログ保存先のディレクトリパス（processing_log）を定義
 log_dir = os.path.join(PARENT_OUTDIR, "processing_log")
@@ -58,23 +58,15 @@ input_dirs = [
 ]
 
 params = {
-    "OUTPUT_MODE":"VIDEO",
     # パラメータ std score
     "INPUT_DIR": "./sun_images",  # 処理対象の画像フォルダ
     "CROP_H": 800,  # 抽出する画像サイズ(縦幅)
     "CROP_W": 800,  # 抽出する画像サイズ(横幅)
-    "OUT_DIR_CSV": "./output_pixels",  # CSV保存先フォルダ
     # パラメータ colormap
     "DEBUG": True,  # True: デバッグ情報を表示
     "OUTPUT_DIR": r"",  # 出力動画の保存先フォルダ
     "OUTPUT_NAME": "output_test_sample",  # 出力動画のファイル名（拡張子なし）
-    "OUTPUT_EXT": ".mp4",  # 出力動画の拡張子
-    "VIDEO_CODEC": "mp4v",  # 動画コーデック
-    "FPS": 60.0,  # 出力動画のフレームレート
-    "MEAN_STD_OUTPUT_DIR": r"",  # 平均と標準偏差の出力画像の保存先フォルダ
-    "MEAN_IMAGE_NAME": "mean_image",  # 平均値の出力画像のファイル名
-    "STD_IMAGE_NAME": "std_image",  # 標準偏差の出力画像のファイル名
-    "IMAGE_EXT": ".png",  # 平均と標準偏差の出力画像の拡張子
+    "OUTPUT_EXT": ".png",  # 平均と標準偏差の出力画像の拡張子
 }  # 環境変数を指定して子スクリプトを実行
 
 EroNum = 0
@@ -94,19 +86,12 @@ for i, base_path in enumerate(input_dirs):
         dir_params = params.copy()
         dir_params["INPUT_DIR"] = str(dirpath)
         dir_params["OUTPUT_NAME"] = dirname
-        dir_params["MEAN_IMAGE_NAME"] = dirname + "_MEAN"
-        dir_params["STD_IMAGE_NAME"] = dirname + "_STD"
 
         OUTPUT_DIRS = os.path.join(PARENT_OUTDIR, "output", basename)
-        dir_params["OUTPUT_DIR"] = os.path.join(OUTPUT_DIRS, "video")
-        dir_params["OUT_DIR"] = os.path.join(OUTPUT_DIRS, "csv")
-        dir_params["MEAN_STD_OUTPUT_DIR"] = os.path.join(OUTPUT_DIRS, "mean_std")
+        dir_params["OUTPUT_DIR"] = os.path.join(OUTPUT_DIRS, "std_100f")
         
         Path(OUTPUT_DIRS).mkdir(parents=True, exist_ok=True)
-        Path(dir_params["OUTPUT_DIR"]).mkdir(parents=True, exist_ok=True)
-        Path(dir_params["OUT_DIR"]).mkdir(parents=True, exist_ok=True)
-        Path(dir_params["MEAN_STD_OUTPUT_DIR"]).mkdir(parents=True, exist_ok=True)
-        
+        Path(dir_params["OUTPUT_DIR"]).mkdir(parents=True, exist_ok=True)        
 
         json_payload = json.dumps(dir_params)
         

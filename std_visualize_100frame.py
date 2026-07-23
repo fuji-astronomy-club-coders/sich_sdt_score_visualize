@@ -80,35 +80,7 @@ colormap_lut = create_colormap()
 
 # =====================動画作成用====================
 # 1フレームずつ取り出し、LUTを適用して保存用配列へ追加
-for frame in std_images:
-    # 標準偏差を50〜100へ正規化
-    normalized_frame = normalize_image(frame)
-    # グレースケール → BGR
-    three_channel_frame = cv2.cvtColor(
-        normalized_frame, 
-        cv2.COLOR_GRAY2BGR,
-    )
-    # LUT適用
-    color_mapped_frame = cv2.LUT(
-        three_channel_frame, 
-        colormap_lut,
-    )
-
-    # OpenCV(BGR) → ffmpeg(RGB)
-    rgb_frame = cv2.cvtColor(
-        color_mapped_frame,
-        cv2.COLOR_BGR2RGB,
-    )
-
-    color_frames.append(rgb_frame)
-
-color_frames = np.array(color_frames)
-compress_analysis_frames(
-    frames=color_frames,
-    output_path=os.path.join(
-        OUTPUT_DIR, 
-        OUTPUT_NAME + OUTPUT_EXT
-    ),
-    fps=FPS,
-    lossless=True)
-print("動画の作成が完了しました")
+for i,frame in enumerate(std_images):
+    start,end=st_ed[i]
+    statistics_image(frame, os.path.join(OUTPUT_DIR, OUTPUT_NAME+f"f{start}-f{end}" + OUTPUT_EXT))
+print("画像の保存が完了しました")
