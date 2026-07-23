@@ -16,6 +16,13 @@ FPS = 1                   # 出力動画のフレームレート
 
 STD_100f_OUTPUT_DIR = ""
 
+if os.environ.get("RUN_BY_SUBPROCESS") == "true":
+    print("このスクリプトは subprocess から実行されています。")
+    # 標準入力から流れてきた文字列を一括で読み込む
+    input_data = sys.stdin.read()
+
+    # JSON文字列をPythonの辞書オブジェクトに復元
+    locals().update(json.loads(input_data))
 
 frames, _ = extract_sun_mini(INPUT_DIR, h_size=CROP_H, w_size=CROP_W)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
