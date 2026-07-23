@@ -98,7 +98,7 @@ for i, base_path in enumerate(input_dirs):
         try:
             # リアルタイムにログをキャプチャするために Popen を使用
             proc = subprocess.Popen(
-                ["python", "std_score_visualize.py"],
+                ["python", "std_visualize_100frame.py"],
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,  # 標準エラーも標準出力に統合してキャプチャ

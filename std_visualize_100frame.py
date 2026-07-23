@@ -1,7 +1,7 @@
 import os
 import cv2
 import numpy as np
-from lib.lib_frommain import normalize_image, extract_sun_mini,create_colormap
+from lib.lib_frommain import normalize_image, extract_sun_mini,create_colormap,statistics_image
 from lib.ffmpeg_video import compress_analysis_frames
 
 #パラメータ宣言
@@ -67,36 +67,7 @@ if DEBUG:
 colormap_lut = create_colormap()
 
 # =====================動画作成用====================
-color_frames = []
 # 1フレームずつ取り出し、LUTを適用して保存用配列へ追加
 for frame in std_images:
-    # 標準偏差を50〜100へ正規化
-    normalized_frame = normalize_image(frame)
-    # グレースケール → BGR
-    three_channel_frame = cv2.cvtColor(
-        normalized_frame, 
-        cv2.COLOR_GRAY2BGR,
-    )
-    # LUT適用
-    color_mapped_frame = cv2.LUT(
-        three_channel_frame, 
-        colormap_lut,
-    )
-
-    # OpenCV(BGR) → ffmpeg(RGB)
-    rgb_frame = cv2.cvtColor(
-        color_mapped_frame,
-        cv2.COLOR_BGR2RGB,
-    )
-
-    color_frames.append(rgb_frame)
-
-color_frames = np.array(color_frames)
-save_analysis_frames(
-    frames=color_frames,
-    output_path=os.path.join(
-        OUTPUT_DIR, 
-        OUTPUT_NAME
-    ),
-    ext = OUTPUT_EXT,)
+   statistics_image(frame,os.path.join(OUTPUT_DIR,OUTPUT_NAME+OUTPUT_EXT))
 print("画像の保存が完了しました")
