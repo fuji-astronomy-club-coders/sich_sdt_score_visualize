@@ -1,19 +1,30 @@
 import os
 import cv2
+import sys
+import json
 import numpy as np
 from lib.lib_frommain import normalize_image, extract_sun_mini,create_colormap
 from lib.ffmpeg_video import compress_analysis_frames
 
-#パラメータ宣言
-DEBUG = True              # True: デバッグ情報を表示
-INPUT_DIR = ""            # 処理対象の画像フォルダ
-CROP_H = 800              # 抽出する画像サイズ(縦幅)
-CROP_W = 800              # 抽出する画像サイズ(横幅)
-OUTPUT_DIR = ""           # 出力動画の保存先フォルダ
-OUTPUT_NAME = ""          # 出力動画のファイル名(拡張子なし)
-OUTPUT_EXT = ""           # 出力動画の拡張子
-FPS = 1                   # 出力動画のフレームレート
+# パラメータ宣言
+DEBUG = True  # True: デバッグ情報を表示
+INPUT_DIR = ""  # 処理対象の画像フォルダ
+CROP_H = 800  # 抽出する画像サイズ(縦幅)
+CROP_W = 800  # 抽出する画像サイズ(横幅)
+OUTPUT_DIR = ""  # 出力動画の保存先フォルダ
+OUTPUT_NAME = ""  # 出力動画のファイル名(拡張子なし)
+OUTPUT_EXT = ""  # 出力動画の拡張子
+FPS = 1  # 出力動画のフレームレート
 
+STD_100f_OUTPUT_DIR = ""
+
+if os.environ.get("RUN_BY_SUBPROCESS") == "true":
+    print("このスクリプトは subprocess から実行されています。")
+    # 標準入力から流れてきた文字列を一括で読み込む
+    input_data = sys.stdin.read()
+
+    # JSON文字列をPythonの辞書オブジェクトに復元
+    locals().update(json.loads(input_data))
 
 frames, _ = extract_sun_mini(INPUT_DIR, h_size=CROP_H, w_size=CROP_W)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -24,6 +35,7 @@ n_frames, height, width = frames.shape
 # 100フレームごとの標準偏差画像を作成
 std_images = []
 
+st_ed=[]
 for start in range(0, n_frames, 100):
 
     # 終了位置
