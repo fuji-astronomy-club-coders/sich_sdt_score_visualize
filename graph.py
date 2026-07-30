@@ -5,6 +5,11 @@ import matplotlib.pyplot as plt
 from std_score_visualize import extract_sun_mini
 from std_score_visualize import calculate_hensachi
 
+# ファイルの上のほうに追加！
+INPUT_DIR = r"J:\2025-08-30\2025-08-30pic-LT2"  # 入力フォルダのパス
+CROP_H = 800             # 切り取る高さ（数値）
+CROP_W = 800             # 切り取る幅（数値）
+
 # ダミーの偏差値画像（10フレーム、5×5ピクセル）
 #hensachi = np.random.normal(
 #    loc=50,      # 平均50
@@ -36,13 +41,8 @@ from std_score_visualize import calculate_hensachi
 
 
 #本データだよ。
-#NumPyとグラフを描くためのMatplotlibを読み込む
-import numpy as np
-import matplotlib.pyplot as plt
 
-from std_score_visualize import extract_sun_mini
-from std_score_visualize import calculate_hensachi
-
+print(f"\n--- 画像ファイルの読み込み開始: {INPUT_DIR} ---")
 frames, centers = extract_sun_mini(
     INPUT_DIR,
     h_size=CROP_H,
