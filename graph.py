@@ -66,8 +66,8 @@ frames, centers = extract_sun_mini(
 mean, std, hensachi = calculate_hensachi(frames)
 
 # 見たいピクセル座標
-y = 350
-x = 420
+y = 393
+x = 144
 
 # 全フレームのそのピクセルの偏差値を取り出す
 pixel_values = hensachi[:, y, x]
@@ -82,5 +82,4 @@ plt.xlabel("Frame")
 plt.ylabel("Hensachi")
 plt.title(f"Hensachi of Pixel ({x}, {y})")
 plt.grid(True)
-plt.savefig("pixel_graph.png", dpi=300)
-plt.show()
+plt.savefig(f"pixel_graph_x{x}_y{y}.png", dpi=300)
