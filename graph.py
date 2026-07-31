@@ -21,7 +21,7 @@ r"""memo:実行するパス
 [ ] - r"J:\Observe-Data\2026-01-17\2026-1-17pic-LT",
 [ ] - r"J:\Observe-Data\2026-01-17\2026-1-17pic-PL",
 """
-INPUT_DIR = r"J:\2025-08-30\2025-08-30pic-LT2"  # 入力フォルダのパス
+INPUT_DIR = r"J:\Observe-Data\2025-08-30\2025-08-30pic-LT\2025-08-30-0441_7-CapObj"  # 入力フォルダのパス
 CROP_H = 800             # 切り取る高さ（数値）
 CROP_W = 800             # 切り取る幅（数値）
 
