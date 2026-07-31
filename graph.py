@@ -24,6 +24,12 @@ INPUT_DIR = r"J:\Observe-Data\2025-08-30\2025-08-30pic-LT\2025-08-30-0441_7-CapO
 CROP_H = 800             # 切り取る高さ（数値）
 CROP_W = 800             # 切り取る幅（数値）
 
+#強調するフレーム
+emphasis=(176,179)
+
+# 見たいピクセル座標
+y = 393
+x = 144
 # ダミーの偏差値画像（10フレーム、5×5ピクセル）
 #hensachi = np.random.normal(
 #    loc=50,      # 平均50
@@ -65,9 +71,7 @@ frames, centers = extract_sun_mini(
 
 mean, std, hensachi = calculate_hensachi(frames)
 
-# 見たいピクセル座標
-y = 393
-x = 144
+
 
 # 全フレームのそのピクセルの偏差値を取り出す
 pixel_values = hensachi[:, y, x]
@@ -76,10 +80,23 @@ pixel_values = hensachi[:, y, x]
 frames = np.arange(len(pixel_values))
 
 # グラフ作成
-plt.figure(figsize=(10, 4))
-plt.plot(frames, pixel_values, marker="o")
-plt.xlabel("Frame")
+
+plt.figure(figsize=(11, 4))
+
+plt.minorticks_on()
+plt.xticks(np.arange(0, len(frames), 100))
+plt.yticks(np.arange(0, 100, 10))
+
+plt.plot(frames, pixel_values, marker="o",markersize=0,markerfacecolor="#ec468a")
+
+plt.axvspan(emphasis[0]-0.5, emphasis[1]+0.5, color='orange', alpha=0.3, label='Highlight Area')
+
+plt.xlabel("Frames")
 plt.ylabel("Hensachi")
-plt.title(f"Hensachi of Pixel ({x}, {y})")
+plt.title(f"Hensachi of Pixel (x={x}, y={y})")
 plt.grid(True)
+
+plt.tight_layout()
 plt.savefig(f"pixel_graph_x{x}_y{y}.png", dpi=300)
+
+plt.close()
