@@ -13,13 +13,12 @@ now_jst = datetime.now(JST)
 print(now_jst.isoformat(timespec="milliseconds"))
 
 # ファイルの上のほうに追加！
-r"""memo:実行するパス
-[ ] - r"J:\Observe-Data\2025-07-20\2025-07-20pic-LT",
-[ ] - r"J:\Observe-Data\2025-07-20\2025-07-20pic-PL",
-[ ] - r"J:\Observe-Data\2025-08-30\2025-08-30pic-LT",
-[ ] - r"J:\Observe-Data\2025-08-30\2025-08-30pic-PL",
-[ ] - r"J:\Observe-Data\2026-01-17\2026-1-17pic-LT",
-[ ] - r"J:\Observe-Data\2026-01-17\2026-1-17pic-PL",
+r"""markdown
+memo:Mr.粕谷instructions (oneday)
+> 必要な図は2026神戸ポスター_7_29.pptxにおける、図8-1のみ。
+>
+> この図の役割は、図8-2の補足であり、役割としては,8-2の画像で青や赤が強く出ているような場所のピクセルの偏差値の推移を可視化すること。
+> 目的は、赤や青の濃さが、偏差の大きさを示していること。また、その具体的な数値を図示すること。
 """
 INPUT_DIR = r"J:\Observe-Data\2025-08-30\2025-08-30pic-LT\2025-08-30-0441_7-CapObj"  # 入力フォルダのパス
 CROP_H = 800             # 切り取る高さ（数値）
