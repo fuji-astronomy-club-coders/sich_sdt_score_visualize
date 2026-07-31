@@ -28,8 +28,8 @@ CROP_W = 800             # 切り取る幅（数値）
 emphasis=(176,179)
 
 # 見たいピクセル座標
-y = 393
-x = 144
+y = 250
+x = 250
 # ダミーの偏差値画像（10フレーム、5×5ピクセル）
 #hensachi = np.random.normal(
 #    loc=50,      # 平均50
@@ -92,8 +92,8 @@ plt.plot(frames, pixel_values, marker="o",markersize=0,markerfacecolor="#ec468a"
 plt.axvspan(emphasis[0]-0.5, emphasis[1]+0.5, color='orange', alpha=0.3, label='Highlight Area')
 
 plt.xlabel("Frames")
-plt.ylabel("Hensachi")
-plt.title(f"Hensachi of Pixel (x={x}, y={y})")
+plt.ylabel("Standardized test score (deviation score)")
+plt.title(f"Trend of the deviation value for the specified pixel (x={x}, y={y})")
 plt.grid(True)
 
 plt.tight_layout()
