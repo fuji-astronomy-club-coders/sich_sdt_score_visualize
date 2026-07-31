@@ -5,6 +5,13 @@ import matplotlib.pyplot as plt
 from std_score_visualize import extract_sun_mini
 from std_score_visualize import calculate_hensachi
 
+#log用のやつ
+from datetime import datetime, timezone, timedelta
+JST = timezone(timedelta(hours=9))
+now_jst = datetime.now(JST)
+
+print(now_jst.isoformat(timespec="milliseconds"))
+
 # ファイルの上のほうに追加！
 r"""memo:実行するパス
 [ ] - r"J:\Observe-Data\2025-07-20\2025-07-20pic-LT",
