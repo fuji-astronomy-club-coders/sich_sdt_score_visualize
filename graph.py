@@ -18,11 +18,11 @@ CROP_H = 800             # 切り取る高さ（数値）
 CROP_W = 800             # 切り取る幅（数値）
 
 #強調するフレーム
-emphasis=(176,179)
+emphasis=[(8,9),(708,709)]
 
 # 見たいピクセル座標
-y = 250
-x = 250
+y = 400
+x = 400
 # ダミーの偏差値画像（10フレーム、5×5ピクセル）
 #hensachi = np.random.normal(
 #    loc=50,      # 平均50
@@ -82,7 +82,8 @@ plt.yticks(np.arange(0, 100, 10))
 
 plt.plot(frames, pixel_values, marker="o",markersize=0,markerfacecolor="#ec468a")
 
-plt.axvspan(emphasis[0]-0.5, emphasis[1]+0.5, color='orange', alpha=0.3, label='Highlight Area')
+for emp in emphasis:
+    plt.axvspan(emp[0]-0.5, emp[1]+0.5, color='orange', alpha=0.3, label='Highlight Area')
 
 plt.xlabel("Frames")
 plt.ylabel("Standardized test score (deviation score)")
