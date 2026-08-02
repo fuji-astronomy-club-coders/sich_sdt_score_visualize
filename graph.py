@@ -13,7 +13,7 @@ now_jst = datetime.now(JST)
 print(now_jst.isoformat(timespec="milliseconds"))
 
 # ファイルの上のほうに追加！
-INPUT_DIR = r"J:\Observe-Data\2025-08-30\2025-08-30pic-LT\2025-08-30-0441_7-CapObj"  # 入力フォルダのパス
+INPUT_DIR = r"J:\Observe-Data\2025-08-30\2025-08-30pic-PL\2025-08-30-0448_4-CapObj"  # 入力フォルダのパス
 CROP_H = 800             # 切り取る高さ（数値）
 CROP_W = 800             # 切り取る幅（数値）
 
