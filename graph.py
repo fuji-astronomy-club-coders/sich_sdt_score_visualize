@@ -13,16 +13,16 @@ now_jst = datetime.now(JST)
 print(now_jst.isoformat(timespec="milliseconds"))
 
 # ファイルの上のほうに追加！
-INPUT_DIR = r"J:\Observe-Data\2025-08-30\2025-08-30pic-PL\2025-08-30-0448_4-CapObj"  # 入力フォルダのパス
+INPUT_DIR = r"J:\Observe-Data\2025-08-30\2025-08-30pic-LT\2025-08-30-0441_7-CapObj"  # 入力フォルダのパス
 CROP_H = 800             # 切り取る高さ（数値）
 CROP_W = 800             # 切り取る幅（数値）
 
 #強調するフレーム
-emphasis=[(8,9),(708,709)]
+emphasis=[(176,179)]
 
 # 見たいピクセル座標
-y = 400
-x = 400
+y = 250
+x = 250
 # ダミーの偏差値画像（10フレーム、5×5ピクセル）
 #hensachi = np.random.normal(
 #    loc=50,      # 平均50
@@ -74,7 +74,7 @@ frames = np.arange(len(pixel_values))
 
 # グラフ作成
 
-plt.figure(figsize=(11, 4))
+plt.figure(figsize=(11, 3))
 
 plt.minorticks_on()
 plt.xticks(np.arange(0, len(frames), 100))
